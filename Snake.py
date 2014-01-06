@@ -54,6 +54,8 @@ def reset():
        
 def refresh():
     global snake_position_x, snake_position_y, released, N, QUIT_SIGNAL, fps
+    if QUIT_SIGNAL==1:
+        return
     ### Last element of snake removed to the front, according to pressed key
     ### Second if argument always prevents the snake to move if user presses the key of opposite direction
     if (('up') in pressed_keys) and released[1]==0:
@@ -190,7 +192,7 @@ def drawing():
 
     if QUIT_SIGNAL==1:
         draw_text('GAME OVER',WIDTH//2-FONT_SIZE*4,HEIGHT//2-FONT_SIZE//2,'left')
-        pyglet.clock.unschedule(refresh) # Stops clock
+
         
         
         
