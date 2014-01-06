@@ -1,10 +1,20 @@
+import sys 
+from time import sleep
+from random import choice
+
 import pyglet
 from pyglet import gl
 from pyglet.window import key
-import random
-from random import choice
-from time import sleep
+
 from draw import draw_rectangle
+
+
+print sys.argv
+
+if len(sys.argv) == 2:
+    PIECE = sys.argv[1]
+else:
+    PIECE = 10
 
 ### Snake consists of N pieces 10*10
 
@@ -14,7 +24,6 @@ WIDTH=100
 HEIGHT=50
 SNAKE_LENGTH=20
 N=20
-PIECE=SNAKE_LENGTH/N*10 # 1*10 px
 WALL_THICKNESS=1
 FONT_SIZE=4
 SCORE_POSITION=[WIDTH//2-FONT_SIZE//2,HEIGHT-FONT_SIZE-WALL_THICKNESS]
