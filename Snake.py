@@ -16,7 +16,6 @@ else:
 
 ### Snake consists of N pieces 10*10
 
-global N, released, snake_position_x, snake_position_y, QUIT_SIGNAL, fps
 ### Units - snake pieces
 WIDTH=100
 HEIGHT=50
@@ -32,95 +31,52 @@ elapsed_time = 0
 
 snake_position_x=[0]*N
 snake_position_y=[0]*N
-released=[0,0,0,0]
 food_position=[WIDTH//2,HEIGHT//2]
 fps=10.0
 
 for i in range(0,N):
     snake_position_x[i]=WIDTH//2+i
     snake_position_y[i]=HEIGHT//2
-pressed_keys=set([])
+
+last_key='right'
                  
 
 def reset():
-    global N, released, snake_position_x, snake_position_y
+    global N, last_key, snake_position_x, snake_position_y
     N=20
     food_position[0]=0
     food_position[1]=0
     for i in range(0,N):
         snake_position_x[i]=WIDTH//2+i
         snake_position_y[i]=HEIGHT//2
-    released[0]=0
-    released[1]=0
-    released[2]=0
-    released[3]=1 # Default movement of snake is right direction
+    last_key = 'right' # Default movement of snake is right direction
     food_position[0]=choice([t for t in range(WALL_THICKNESS+1,WIDTH-1-WALL_THICKNESS-1)])
     food_position[1]=choice([t for t in range(WALL_THICKNESS+1,HEIGHT-1-WALL_THICKNESS-1)])
     ### Food is placed periodically with period PIECE
 
        
 def refresh():
-    global snake_position_x, snake_position_y, released, N, QUIT_SIGNAL, fps
+    global snake_position_x, snake_position_y, last_key, N, QUIT_SIGNAL
     if QUIT_SIGNAL==1:
         return
     ### Last element of snake removed to the front, according to pressed key
     ### Second if argument always prevents the snake to move if user presses the key of opposite direction
-    if (('up') in pressed_keys) and released[1]==0:
-        snake_position_x[:-1]=snake_position_x[1:]
-        snake_position_y[:-1]=snake_position_y[1:]
-        snake_position_y[-1]=snake_position_y[-1]+1
-        released[0]=1
-        released[1]=0
-        released[2]=0
-        released[3]=0
 
-    if ('down') in pressed_keys and released[0]==0:
-        snake_position_x[:-1]=snake_position_x[1:]
-        snake_position_y[:-1]=snake_position_y[1:]
-        snake_position_y[-1]=snake_position_y[-1]-1
-        released[0]=0
-        released[1]=1
-        released[2]=0
-        released[3]=0
-        
-    if ('left') in pressed_keys and released[3]==0:
-        snake_position_x[:-1]=snake_position_x[1:]
-        snake_position_y[:-1]=snake_position_y[1:]
-        snake_position_x[-1]=snake_position_x[-1]-1
-        released[0]=0
-        released[1]=0
-        released[2]=1
-        released[3]=0
-        
-    if ('right') in pressed_keys and released[2]==0:
-        snake_position_x[:-1]=snake_position_x[1:]
-        snake_position_y[:-1]=snake_position_y[1:]
-        snake_position_x[-1]=snake_position_x[-1]+1
-        released[0]=0
-        released[1]=0
-        released[2]=0
-        released[3]=1
 
+    snake_position_x[:-1]=snake_position_x[1:]
+    snake_position_y[:-1]=snake_position_y[1:]
     ### If nothing is pressed, snake continues the same direction
-    if released[0]==1: # **************
-        snake_position_x[:-1]=snake_position_x[1:]
-        snake_position_y[:-1]=snake_position_y[1:]
+    if last_key == 'up': # **************
         snake_position_y[-1]=snake_position_y[-1]+1
 
-    if released[1]==1:
-        snake_position_x[:-1]=snake_position_x[1:]
-        snake_position_y[:-1]=snake_position_y[1:]
+    if last_key == 'down':
         snake_position_y[-1]=snake_position_y[-1]-1
 
-    if released[2]==1:
-        snake_position_x[:-1]=snake_position_x[1:]
-        snake_position_y[:-1]=snake_position_y[1:]
+    if last_key == 'left':
         snake_position_x[-1]=snake_position_x[-1]-1
     
      
-    if released[3]==1:
-        snake_position_x[:-1]=snake_position_x[1:]
-        snake_position_y[:-1]=snake_position_y[1:]
+    if last_key == 'right':
         snake_position_x[-1]=snake_position_x[-1]+1
 
     ### Snake hits the boundary. QUIT_SIGNAL is activated    
@@ -131,19 +87,20 @@ def refresh():
       # it is moved 2 square elements in the same direction - first because of key pressing, then it follows the direction to keep it moving, see ***********
     if (snake_position_x[-1]==food_position[0] and snake_position_y[-1]==food_position[1]) or (snake_position_x[-2]==food_position[0] and snake_position_y[-2]==food_position[1]):
 
-        if released==[0,0,0,1]: # from left, right key is pressed
+
+        if last_key == 'right': # from left, right key is pressed
             snake_position_x.append(food_position[0]+1)
             snake_position_y.append(food_position[1])
             
-        elif released==[0,1,0,0]: # from up, down key is pressed
+        elif last_key == 'down': # from up, down key is pressed
             snake_position_x.append(food_position[0])
             snake_position_y.append(food_position[1]-1)
 
-        elif released==[0,0,1,0]: # from right, left key is pressed
+        elif last_key == 'left': # from right, left key is pressed
             snake_position_x.append(food_position[0]-1)
             snake_position_y.append(food_position[1])
             
-        elif released==[1,0,0,0]: # from down, up key is pressed
+        elif last_key == 'up': # from down, up key is pressed
             snake_position_x.append(food_position[0])
             snake_position_y.append(food_position[1]+1)
 
@@ -151,9 +108,6 @@ def refresh():
         food_position[0]=choice([t for t in range(0,WIDTH-1)])
         food_position[1]=choice([t for t in range(0,HEIGHT-1)])
         N+=1
-##        fps+=0.001
-##        print fps
-##        pyglet.clock.schedule_interval(refresh,1/fps)
 
    ### Checks is snake doesn't cross itself, it is impossible to cross -2 element also
     indx = [i for i, x in enumerate(snake_position_x[:-2]) if x == snake_position_x[-1]] # List of all other snake positions with same x value as the last element
@@ -211,37 +165,16 @@ def key_press(symbol, modificators):
     prida dvojice (n-tice) tvaru (smer, cislo palky).
     Program pak muze pohybovat palkou podle toho, co je v mnozine.
     """
-    if symbol == key.LEFT:
-        pressed_keys.add('left')
-    if symbol == key.RIGHT:
-        pressed_keys.add('right')
-    if symbol == key.UP:
-        pressed_keys.add('up')
-    if symbol == key.DOWN:
-        pressed_keys.add('down')
+    global last_key
+    if symbol == key.LEFT and last_key != 'right':
+        last_key = 'left'
+    if symbol == key.RIGHT and last_key != 'left':
+        last_key = 'right'
+    if symbol == key.UP and last_key != 'down':
+        last_key = 'up'
+    if symbol == key.DOWN and last_key != 'up':
+        last_key = 'down'
     # N.B. klavesu ESC Pyglet osetri sam: zavre okno a ukonci funkci run()
-
-
-def key_release(symbol, modificators):
-    """Osetri pusteni klavesy
-
-    Opak funkce ``stisk_klavesy`` -- podle argumentu vynda prislusnou
-    dvojici z mnoziny.
-    """
-    # Vsimnete si pouziti funkce ``discard``: na rozdil od ``remove``
-    # nezpusobi chybu, kdyz prvek v mnozine neni. Takze program nespadne,
-    # kdyz napr. uzivatel zmackne klavesu, pak se prepne do naseho okna,
-    # a pak teprve klavesu pusti.
-    if symbol == key.LEFT:
-        pressed_keys.discard('left')
-    if symbol == key.RIGHT:
-        pressed_keys.discard('right')
-    if symbol == key.UP:
-        pressed_keys.discard('up')
-    if symbol == key.DOWN:
-        pressed_keys.discard('down')
-    # Mimochodem, funkce pusteni_klavesy a stisk_klavesy by se daly hodne
-    # zjednodusit pomoci slovniku. Zkusite to?
 
 def update(dt):
     global elapsed_time
@@ -266,7 +199,6 @@ window = pyglet.window.Window(width=int(WIDTH*PIECE), height=int(HEIGHT*PIECE))
 window.push_handlers(
     on_draw=drawing,  # na vykresleni okna pouzij funkci `vykresli`
     on_key_press=key_press,  # po stisknuti klavesy zavolej `stisk_klavesy`
-    on_key_release=key_release,  # a mame i funkci na  pusteni klavesy
     )
 
 # Jeste mame jednu podobnou funkci, kterou ale neprirazujeme primo
