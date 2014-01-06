@@ -6,7 +6,7 @@ import pyglet
 from pyglet import gl
 from pyglet.window import key
 
-from draw import draw_rectangle
+from draw import draw_rectangle, draw_text
 
 
 if len(sys.argv) == 2:
@@ -105,41 +105,31 @@ def refresh():
     if snake_position[-1] in snake_position[:-1]:
         QUIT_SIGNAL = 1
 
-
-def draw_text(text, x, y, position):
-    score = pyglet.text.Label(
-        text,
-        font_name='League Gothic',
-        font_size=FONT_SIZE*PIECE,
-        x=x*PIECE, y=y*PIECE, anchor_x=position)
-    score.draw()
-
-
 def drawing():
     gl.glClear(gl.GL_COLOR_BUFFER_BIT)  # smaz obsah okna (vybarvi na cerno)
     gl.glColor3f(0, 1, 0)  # nastav barvu kresleni na zelenu
 
     ### Plots the snake body
     for i in range(0,len(snake_position)-1):
-        draw_rectangle(snake_position[i][0],snake_position[i][1],snake_position[i][0]+1,snake_position[i][1]+1,PIECE)
+        draw_rectangle(PIECE*snake_position[i][0],PIECE*snake_position[i][1],PIECE*(snake_position[i][0]+1),PIECE*(snake_position[i][1]+1))
 
     ### Snake head in blue
     gl.glColor3f(0, 0, 1)
-    draw_rectangle(snake_position[-1][0],snake_position[-1][1],snake_position[-1][0]+1,snake_position[-1][1]+1,PIECE)
+    draw_rectangle(PIECE*snake_position[-1][0],PIECE*snake_position[-1][1],PIECE*(snake_position[-1][0]+1),PIECE*(snake_position[-1][1]+1))
     
     ### Food
-    draw_rectangle(food_position[0],food_position[1],food_position[0]+1,food_position[1]+1,PIECE)
+    draw_rectangle(PIECE*food_position[0],PIECE*food_position[1],PIECE*(food_position[0]+1),PIECE*(food_position[1]+1))
     ### Score
-    draw_text(str(N-20),SCORE_POSITION[0],SCORE_POSITION[1],'left')
+    draw_text(str(N-20),PIECE*SCORE_POSITION[0],PIECE*SCORE_POSITION[1],'left', PIECE*FONT_SIZE)
     ### Walls
     gl.glColor3f(0, 1, 0)  # nastav barvu kresleni na zelenu   
-    draw_rectangle(0, 0, WALL_THICKNESS, HEIGHT,PIECE)
-    draw_rectangle(0, 0, WIDTH,WALL_THICKNESS,PIECE)
-    draw_rectangle(WIDTH-WALL_THICKNESS,0,WIDTH,HEIGHT,PIECE)
-    draw_rectangle(0,HEIGHT-WALL_THICKNESS,WIDTH,HEIGHT,PIECE)
+    draw_rectangle(0, 0, PIECE*WALL_THICKNESS, PIECE*HEIGHT)
+    draw_rectangle(0, 0, PIECE*WIDTH, PIECE*WALL_THICKNESS)
+    draw_rectangle(PIECE*WIDTH-PIECE*WALL_THICKNESS,0,PIECE*WIDTH,PIECE*HEIGHT)
+    draw_rectangle(0,PIECE*HEIGHT-PIECE*WALL_THICKNESS,PIECE*WIDTH,PIECE*HEIGHT)
 
     if QUIT_SIGNAL==1:
-        draw_text('GAME OVER',WIDTH//2-FONT_SIZE*4,HEIGHT//2-FONT_SIZE//2,'left')
+        draw_text('GAME OVER',PIECE*WIDTH//2-PIECE*FONT_SIZE*4,PIECE*HEIGHT//2-PIECE*FONT_SIZE//2,'left', PIECE*FONT_SIZE)
 
         
         
