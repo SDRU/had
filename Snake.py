@@ -19,7 +19,7 @@ FONT_SIZE=4
 SCORE_POSITION=[WIDTH//2-FONT_SIZE//2,HEIGHT-FONT_SIZE-WALL_THICKNESS]
 QUIT_SIGNAL=0
 
-speed = 100  # ms
+speed = 0.1  # s
 elapsed_time = 0
 
 snake_position_x=[0]*N
