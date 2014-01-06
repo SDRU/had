@@ -33,6 +33,13 @@ snake_position = []
 food_position=(WIDTH//2, HEIGHT//2)
 
 last_key='right'
+
+DIRECTIONS = {
+     'up': (0, 1),
+     'down': (0, -1),
+     'left': (-1, 0),
+     'right': (1, 0)
+}
                  
 def reset():
     global N, last_key, snake_position, food_position
@@ -56,22 +63,8 @@ def refresh():
 
     snake_position[:-1]=snake_position[1:]
 
-    ### If nothing is pressed, snake continues the same direction
-    if last_key == 'up': # **************
-        snake_position[-1] = (snake_position[-1][0], snake_position[-1][1] + 1)
-
-    elif last_key == 'down':
-        snake_position[-1] = (snake_position[-1][0], snake_position[-1][1] - 1)
-
-    elif last_key == 'left':
-        snake_position[-1] = (snake_position[-1][0] - 1, snake_position[-1][1])
-    
-     
-    elif last_key == 'right':
-        snake_position[-1] = (snake_position[-1][0] + 1, snake_position[-1][1])
-
-    else:
-        raise ValueError(last_key)
+    dx, dy = DIRECTIONS[last_key]
+    snake_position[-1] = (snake_position[-1][0] + dx, snake_position[-1][1] + dy)
 
     ### Snake hits the boundary. QUIT_SIGNAL is activated    
     if (snake_position[-1][0] + 1 > WIDTH-WALL_THICKNESS or
@@ -82,19 +75,7 @@ def refresh():
 
     ### Eating food
     if snake_position[-1] == food_position:
-
-
-        if last_key == 'right': # from left, right key is pressed
-            snake_position.append((food_position[0] + 1, food_position[1]))
-            
-        elif last_key == 'down': # from up, down key is pressed
-            snake_position.append((food_position[0], food_position[1]-1))
-
-        elif last_key == 'left': # from right, left key is pressed
-            snake_position.append((food_position[0]-1, food_position[1]))
-            
-        elif last_key == 'up': # from down, up key is pressed
-            snake_position.append((food_position[0], food_position[1]+1))
+        snake_position.append((food_position[0] + dx, food_position[1] + dy))
 
         ### New food appears
         food_position = (randint(WALL_THICKNESS + 1, WIDTH - WALL_THICKNESS-1),
@@ -131,8 +112,7 @@ def drawing():
     if QUIT_SIGNAL==1:
         draw_text('GAME OVER',PIECE*WIDTH//2-PIECE*FONT_SIZE*4,PIECE*HEIGHT//2-PIECE*FONT_SIZE//2,'left', PIECE*FONT_SIZE)
 
-        
-        
+
         
 def key_press(symbol, modificators):
     
