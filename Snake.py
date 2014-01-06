@@ -4,6 +4,7 @@ from pyglet.window import key
 import random
 from random import choice
 from time import sleep
+from draw import draw_rectangle
 
 ### Snake consists of N pieces 10*10
 
@@ -152,30 +153,7 @@ def refresh():
         if i in indy:
             QUIT_SIGNAL=1
             
-        
-        
-def draw_rectangle(x1, y1, x2, y2):
-    global N, released, snake_position_x, snake_position_y
 
-    """Nakresli obdelnik na dane souradnice
-
-    Nazorny diagram::
-
-         y2 - +-----+
-              |/////|
-         y1 - +-----+
-              :     :
-             x1    x2
-    """
-    # Tady pouzivam volani OpenGL, ktere je pro nas zatim asi nejjednodussi
-    # na pouziti
-    gl.glBegin(gl.GL_TRIANGLE_FAN)   # zacni kreslit spojene trojuhelniky
-    gl.glVertex2f(int(x1)*PIECE, int(y1)*PIECE)  # souradnice A
-    gl.glVertex2f(int(x1)*PIECE, int(y2)*PIECE)  # souradnice B
-    gl.glVertex2f(int(x2)*PIECE, int(y2)*PIECE)  # souradnice C, nakresli trojuhelnik ABC
-    gl.glVertex2f(int(x2)*PIECE, int(y1)*PIECE)  # souradnice D, nakresli trojuhelnik BCD
-    # dalsi souradnice E by nakreslila trojuhelnik CDE, atd.
-    gl.glEnd()  # ukonci kresleni trojuhelniku
 
 def draw_text(text, x, y, position):
     score = pyglet.text.Label(
@@ -193,22 +171,22 @@ def drawing():
 
     ### Plots the snake body
     for i in range(0,len(snake_position_x)-1):
-        draw_rectangle(snake_position_x[i],snake_position_y[i],snake_position_x[i]+1,snake_position_y[i]+1)
+        draw_rectangle(snake_position_x[i],snake_position_y[i],snake_position_x[i]+1,snake_position_y[i]+1,PIECE)
 
     ### Snake head in blue
     gl.glColor3f(0, 0, 1)
-    draw_rectangle(snake_position_x[-1],snake_position_y[-1],snake_position_x[-1]+1,snake_position_y[-1]+1)
+    draw_rectangle(snake_position_x[-1],snake_position_y[-1],snake_position_x[-1]+1,snake_position_y[-1]+1,PIECE)
     
     ### Food
-    draw_rectangle(food_position[0],food_position[1],food_position[0]+1,food_position[1]+1)
+    draw_rectangle(food_position[0],food_position[1],food_position[0]+1,food_position[1]+1,PIECE)
     ### Score
     draw_text(str(N-20),SCORE_POSITION[0],SCORE_POSITION[1],'left')
     ### Walls
     gl.glColor3f(0, 1, 0)  # nastav barvu kresleni na zelenu   
-    draw_rectangle(0,0,WALL_THICKNESS,HEIGHT)
-    draw_rectangle(0,0,WIDTH,WALL_THICKNESS)
-    draw_rectangle(WIDTH-WALL_THICKNESS,0,WIDTH,HEIGHT)
-    draw_rectangle(0,HEIGHT-WALL_THICKNESS,WIDTH,HEIGHT)
+    draw_rectangle(0,0,WALL_THICKNESS,HEIGHT,PIECE)
+    draw_rectangle(0,0,WIDTH,WALL_THICKNESS,PIECE)
+    draw_rectangle(WIDTH-WALL_THICKNESS,0,WIDTH,HEIGHT,PIECE)
+    draw_rectangle(0,HEIGHT-WALL_THICKNESS,WIDTH,HEIGHT,PIECE)
 
     if QUIT_SIGNAL==1:
         draw_text('GAME OVER',WIDTH//2-FONT_SIZE*4,HEIGHT//2-FONT_SIZE//2,'left')
