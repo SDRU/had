@@ -1,6 +1,6 @@
 import sys
 from time import sleep
-from random import choice
+from random import randint
 
 import pyglet
 from pyglet import gl
@@ -29,93 +29,81 @@ QUIT_SIGNAL=0
 speed = 0.1  # s
 elapsed_time = 0
 
-snake_position_x=[0]*N
-snake_position_y=[0]*N
-food_position=[WIDTH//2,HEIGHT//2]
-fps=10.0
-
-for i in range(0,N):
-    snake_position_x[i]=WIDTH//2+i
-    snake_position_y[i]=HEIGHT//2
+snake_position = []
+food_position=(WIDTH//2, HEIGHT//2)
 
 last_key='right'
                  
-
 def reset():
-    global N, last_key, snake_position_x, snake_position_y
+    global N, last_key, snake_position, food_position
     N=20
-    food_position[0]=0
-    food_position[1]=0
-    for i in range(0,N):
-        snake_position_x[i]=WIDTH//2+i
-        snake_position_y[i]=HEIGHT//2
+    snake_position = []
+
+    for i in range(0, N):
+        snake_position.append((WIDTH//2+i, HEIGHT//2))
+
     last_key = 'right' # Default movement of snake is right direction
-    food_position[0]=choice([t for t in range(WALL_THICKNESS+1,WIDTH-1-WALL_THICKNESS-1)])
-    food_position[1]=choice([t for t in range(WALL_THICKNESS+1,HEIGHT-1-WALL_THICKNESS-1)])
+    food_position = (randint(WALL_THICKNESS + 1, WIDTH - WALL_THICKNESS-1),
+                     randint(WALL_THICKNESS + 1, HEIGHT-WALL_THICKNESS-1))
     ### Food is placed periodically with period PIECE
 
        
 def refresh():
-    global snake_position_x, snake_position_y, last_key, N, QUIT_SIGNAL
+    global snake_position, last_key, N, QUIT_SIGNAL, food_position
     if QUIT_SIGNAL==1:
         return
     ### Last element of snake removed to the front, according to pressed key
-    ### Second if argument always prevents the snake to move if user presses the key of opposite direction
 
+    snake_position[:-1]=snake_position[1:]
 
-    snake_position_x[:-1]=snake_position_x[1:]
-    snake_position_y[:-1]=snake_position_y[1:]
     ### If nothing is pressed, snake continues the same direction
     if last_key == 'up': # **************
-        snake_position_y[-1]=snake_position_y[-1]+1
+        snake_position[-1] = (snake_position[-1][0], snake_position[-1][1] + 1)
 
-    if last_key == 'down':
-        snake_position_y[-1]=snake_position_y[-1]-1
+    elif last_key == 'down':
+        snake_position[-1] = (snake_position[-1][0], snake_position[-1][1] - 1)
 
-    if last_key == 'left':
-        snake_position_x[-1]=snake_position_x[-1]-1
+    elif last_key == 'left':
+        snake_position[-1] = (snake_position[-1][0] - 1, snake_position[-1][1])
     
      
-    if last_key == 'right':
-        snake_position_x[-1]=snake_position_x[-1]+1
+    elif last_key == 'right':
+        snake_position[-1] = (snake_position[-1][0] + 1, snake_position[-1][1])
+
+    else:
+        raise ValueError(last_key)
 
     ### Snake hits the boundary. QUIT_SIGNAL is activated    
-    if snake_position_x[-1]+1>WIDTH-WALL_THICKNESS or snake_position_x[-1]<WALL_THICKNESS or snake_position_y[-1]+1>HEIGHT-WALL_THICKNESS or snake_position_y[-1]<WALL_THICKNESS:
-        QUIT_SIGNAL=1
+    if (snake_position[-1][0] + 1 > WIDTH-WALL_THICKNESS or
+            snake_position[-1][0] < WALL_THICKNESS or 
+            snake_position[-1][1] + 1 > HEIGHT-WALL_THICKNESS or 
+            snake_position[-1][1] < WALL_THICKNESS):
+        QUIT_SIGNAL = 1
 
-    ### Eating food. Position of -1 snake element if equal to food position. Why also -2? If the snake suddenly changes direction one element distance before the food appears,
-      # it is moved 2 square elements in the same direction - first because of key pressing, then it follows the direction to keep it moving, see ***********
-    if (snake_position_x[-1]==food_position[0] and snake_position_y[-1]==food_position[1]) or (snake_position_x[-2]==food_position[0] and snake_position_y[-2]==food_position[1]):
+    ### Eating food
+    if snake_position[-1] == food_position:
 
 
         if last_key == 'right': # from left, right key is pressed
-            snake_position_x.append(food_position[0]+1)
-            snake_position_y.append(food_position[1])
+            snake_position.append((food_position[0] + 1, food_position[1]))
             
         elif last_key == 'down': # from up, down key is pressed
-            snake_position_x.append(food_position[0])
-            snake_position_y.append(food_position[1]-1)
+            snake_position.append((food_position[0], food_position[1]-1))
 
         elif last_key == 'left': # from right, left key is pressed
-            snake_position_x.append(food_position[0]-1)
-            snake_position_y.append(food_position[1])
+            snake_position.append((food_position[0]-1, food_position[1]))
             
         elif last_key == 'up': # from down, up key is pressed
-            snake_position_x.append(food_position[0])
-            snake_position_y.append(food_position[1]+1)
+            snake_position.append((food_position[0], food_position[1]+1))
 
         ### New food appears
-        food_position[0]=choice([t for t in range(0,WIDTH-1)])
-        food_position[1]=choice([t for t in range(0,HEIGHT-1)])
+        food_position = (randint(WALL_THICKNESS + 1, WIDTH - WALL_THICKNESS-1),
+                     randint(WALL_THICKNESS + 1, HEIGHT-WALL_THICKNESS-1))
         N+=1
 
    ### Checks is snake doesn't cross itself, it is impossible to cross -2 element also
-    indx = [i for i, x in enumerate(snake_position_x[:-2]) if x == snake_position_x[-1]] # List of all other snake positions with same x value as the last element
-    indy = [i for i, y in enumerate(snake_position_y[:-2]) if y == snake_position_y[-1]] # List of all other snake positions (except last two) with same y value as the last element
-    for i in indx: # indx and indy==True => Last element crosses with snake
-        if i in indy:
-            QUIT_SIGNAL=1
-            
+    if snake_position[-1] in snake_position[:-1]:
+        QUIT_SIGNAL = 1
 
 
 def draw_text(text, x, y, position):
@@ -128,17 +116,16 @@ def draw_text(text, x, y, position):
 
 
 def drawing():
-    global QUIT_SIGNAL
     gl.glClear(gl.GL_COLOR_BUFFER_BIT)  # smaz obsah okna (vybarvi na cerno)
     gl.glColor3f(0, 1, 0)  # nastav barvu kresleni na zelenu
 
     ### Plots the snake body
-    for i in range(0,len(snake_position_x)-1):
-        draw_rectangle(snake_position_x[i],snake_position_y[i],snake_position_x[i]+1,snake_position_y[i]+1,PIECE)
+    for i in range(0,len(snake_position)-1):
+        draw_rectangle(snake_position[i][0],snake_position[i][1],snake_position[i][0]+1,snake_position[i][1]+1,PIECE)
 
     ### Snake head in blue
     gl.glColor3f(0, 0, 1)
-    draw_rectangle(snake_position_x[-1],snake_position_y[-1],snake_position_x[-1]+1,snake_position_y[-1]+1,PIECE)
+    draw_rectangle(snake_position[-1][0],snake_position[-1][1],snake_position[-1][0]+1,snake_position[-1][1]+1,PIECE)
     
     ### Food
     draw_rectangle(food_position[0],food_position[1],food_position[0]+1,food_position[1]+1,PIECE)
@@ -146,8 +133,8 @@ def drawing():
     draw_text(str(N-20),SCORE_POSITION[0],SCORE_POSITION[1],'left')
     ### Walls
     gl.glColor3f(0, 1, 0)  # nastav barvu kresleni na zelenu   
-    draw_rectangle(0,0,WALL_THICKNESS,HEIGHT,PIECE)
-    draw_rectangle(0,0,WIDTH,WALL_THICKNESS,PIECE)
+    draw_rectangle(0, 0, WALL_THICKNESS, HEIGHT,PIECE)
+    draw_rectangle(0, 0, WIDTH,WALL_THICKNESS,PIECE)
     draw_rectangle(WIDTH-WALL_THICKNESS,0,WIDTH,HEIGHT,PIECE)
     draw_rectangle(0,HEIGHT-WALL_THICKNESS,WIDTH,HEIGHT,PIECE)
 
