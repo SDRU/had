@@ -19,6 +19,9 @@ FONT_SIZE=4
 SCORE_POSITION=[WIDTH//2-FONT_SIZE//2,HEIGHT-FONT_SIZE-WALL_THICKNESS]
 QUIT_SIGNAL=0
 
+speed = 100  # ms
+elapsed_time = 0
+
 snake_position_x=[0]*N
 snake_position_y=[0]*N
 released=[0,0,0,0]
@@ -48,7 +51,7 @@ def reset():
     ### Food is placed periodically with period PIECE
 
        
-def refresh(dt):
+def refresh():
     global snake_position_x, snake_position_y, released, N, QUIT_SIGNAL, fps
     ### Last element of snake removed to the front, according to pressed key
     ### Second if argument always prevents the snake to move if user presses the key of opposite direction
@@ -253,6 +256,13 @@ def key_release(symbol, modificators):
     # Mimochodem, funkce pusteni_klavesy a stisk_klavesy by se daly hodne
     # zjednodusit pomoci slovniku. Zkusite to?
 
+def update(dt):
+    global elapsed_time
+    elapsed_time += dt
+    while elapsed_time > speed:
+        elapsed_time-=speed
+        refresh()
+
 # Nastavime prvotni stav
 reset()
 
@@ -276,7 +286,7 @@ window.push_handlers(
 # oknu. Misto toho chceme aby ji Pyglet zavolal vzdycky kdyz "tiknou hodiny"
 
 
-pyglet.clock.schedule_interval(refresh,1/fps) # Waits 0.1 s between another clock tick
+pyglet.clock.schedule(update) # Waits 0.1 s between another clock tick
 
 pyglet.app.run()  # vse je nastaveno, at zacne hra
 # (funkce run() bude porad dokola volat obnov_stav, vykresli, a kdyz se mezitim
