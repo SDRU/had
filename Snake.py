@@ -8,15 +8,13 @@ from pyglet.window import key
 
 from draw import draw_rectangle, draw_text
 
-
+### sys.argv makes a list of all arguments we call with Python, second one is scaling unit size, e.g. python Snake.py 20
 if len(sys.argv) == 2:
     PIECE = int(sys.argv[1])
 else:
     PIECE = 10
 
-### Snake consists of N pieces 10*10
-
-### Units - snake pieces
+### Snake consists of N units, unit = PIECE
 WIDTH=100
 HEIGHT=50
 SNAKE_LENGTH=20
@@ -45,25 +43,25 @@ def reset():
     global N, last_key, snake_position, food_position
     N=20
     snake_position = []
-
+    
+    ### We start with the snake placed in the middle, heading right
     for i in range(0, N):
         snake_position.append((WIDTH//2+i, HEIGHT//2))
 
     last_key = 'right' # Default movement of snake is right direction
     food_position = (randint(WALL_THICKNESS + 1, WIDTH - WALL_THICKNESS-1),
                      randint(WALL_THICKNESS + 1, HEIGHT-WALL_THICKNESS-1))
-    ### Food is placed periodically with period PIECE
 
        
 def refresh():
     global snake_position, last_key, N, QUIT_SIGNAL, food_position
     if QUIT_SIGNAL==1:
         return
-    ### Last element of snake removed to the front, according to pressed key
-
+    ### We move almost all snake elements one unit forward, except the last one 
     snake_position[:-1]=snake_position[1:]
 
     dx, dy = DIRECTIONS[last_key]
+    ### The last element is moved according to last pressed key
     snake_position[-1] = (snake_position[-1][0] + dx, snake_position[-1][1] + dy)
 
     ### Snake hits the boundary. QUIT_SIGNAL is activated    
@@ -73,7 +71,7 @@ def refresh():
             snake_position[-1][1] < WALL_THICKNESS):
         QUIT_SIGNAL = 1
 
-    ### Eating food
+    ### Eating food, head position = food position
     if snake_position[-1] == food_position:
         snake_position.append((food_position[0] + dx, food_position[1] + dy))
 
@@ -82,7 +80,7 @@ def refresh():
                      randint(WALL_THICKNESS + 1, HEIGHT-WALL_THICKNESS-1))
         N+=1
 
-   ### Checks is snake doesn't cross itself, it is impossible to cross -2 element also
+   ### Checks if snake doesn't cross itself
     if snake_position[-1] in snake_position[:-1]:
         QUIT_SIGNAL = 1
 
@@ -134,9 +132,10 @@ def key_press(symbol, modificators):
     # N.B. klavesu ESC Pyglet osetri sam: zavre okno a ukonci funkci run()
 
 def update(dt):
-    global elapsed_time
+    global elapsed_time, speed
     elapsed_time += dt
     while elapsed_time > speed:
+        #speed-=0.00002
         elapsed_time-=speed
         refresh()
 
@@ -162,7 +161,7 @@ window.push_handlers(
 # oknu. Misto toho chceme aby ji Pyglet zavolal vzdycky kdyz "tiknou hodiny"
 
 
-pyglet.clock.schedule(update) # Waits 0.1 s between another clock tick
+pyglet.clock.schedule(update)
 
 pyglet.app.run()  # vse je nastaveno, at zacne hra
 # (funkce run() bude porad dokola volat obnov_stav, vykresli, a kdyz se mezitim
